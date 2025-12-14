@@ -1,55 +1,8 @@
-# Preprocessing des variables catégorielles en one hot encoding
-#One hot encoding des variables catégorielles
-preproc_ohe = preproc.OneHotEncoder(handle_unknown='ignore')
-preproc_ohe = preproc.OneHotEncoder(drop='first', sparse_output = False).fit(vars_categorielles) 
-
-variables_categorielles_ohe = preproc_ohe.transform(vars_categorielles)
-variables_categorielles_ohe = pd.DataFrame(variables_categorielles_ohe, 
-                                           columns = preproc_ohe.get_feature_names_out(vars_categorielles.columns))
-variables_categorielles_ohe.head()
-
-# Normalisation des variables numériques 
-preproc_scale = preproc.StandardScaler(with_mean=True, with_std=True)
-preproc_scale.fit(vars_numeriques)
-
-vars_numeriques_scaled = preproc_scale.transform(vars_numeriques)
-vars_numeriques_scaled = pd.DataFrame(vars_numeriques_scaled, 
-                            columns = vars_numeriques.columns)
-vars_numeriques_scaled.head()
-
-# Sampling 
-X_global = vars_numeriques_scaled.merge(variables_categorielles_ohe,
-                            left_index = True,
-                            right_index = True)
-#Réorganisation des données 
-X = X_global.to_numpy()
-Y = data_model["CM"]
-
-#Oversampling
-#Appliquer le suréchantillonnage à la classe minoritaire
-sampler = RandomOverSampler(random_state=42)
-X_train_resampled, y_train_resampled = sampler.fit_resample(X_train, y_train)
-
-
-#Sampling en 80% train et 20% test
-X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
-
-#Observation de la distribution sur Y_train
-df = pd.DataFrame(y_train_resampled, columns = ["SINISTRE"])
-fig = px.histogram(df, 
-                   x="SINISTRE",
-                  title="Distribution de la variable Y_train_resampled")
-fig.show()
-
 # Kfold 
-#Initialisation
-#Nombre de sous-échantillons pour la cross-validation
 num_splits = 5
 
-#Random Forest regressor
 rf_regressor = RandomForestRegressor(n_estimators=100, random_state=42)
 
-#Initialisation du KFold cross-validation splitter
 kf = KFold(n_splits=num_splits)
 
 #Listes pour enregistrer les performances du modèle
